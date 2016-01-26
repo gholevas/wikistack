@@ -29,19 +29,26 @@ router.get('/search', function (req, res, next) {
 
 router.post('/', function (req, res, next) {
 	//res.json(req.body);
-	var page = new Page({
-		title: req.body.pagetitle,
-		content: req.body.pagecontent,
-		tags: req.body.tags.split(' ')
-	});
-	//page.urlTitle = encodeURIComponent(page.title);
-	page.save()
-	.then(function(page){
+	User.findOrCreate({
+		email: req.body.email,
+		name: req.body.name
+	}).then(function(user){
+		var userid = user._id;
+		var page = new Page({
+			title: req.body.pagetitle,
+			content: req.body.pagecontent,
+			tags: req.body.tags.split(' '),
+			author: userid,
+			status: req.body.openstatus
+		})
+		page.save()
+		.then(function(page){
 		// res.redirect('/'+page.urlTitle);
 		res.redirect(page.route);
 	})
 	.then(null, function(err){
 		res.render('error',{message: "Error" , error:err})
+	})
 	})
 });
 

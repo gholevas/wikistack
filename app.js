@@ -3,7 +3,6 @@ var app = express();
 var morgan = require('morgan');
 var swig  = require('swig');
 require('./filters')(swig);
-var indexRouter = require('./routes');
 var wikiRouter = require('./routes/wiki.js');
 var bodyParser = require('body-parser');
 
