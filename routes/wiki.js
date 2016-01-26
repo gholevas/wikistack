@@ -1,23 +1,68 @@
 var router = require('express').Router();
+var models = require('../models/');
+var Page = models.Page; 
+var User = models.User; 
 
-//var tweetBank = require('../models');
-
-router.get('/wiki', function (req, res, next) {
-	console.log('wiki');
-	res.send('wiki');
-	// res.render( 'index', { title: "George Holevas", tweets: tweets } );
+router.get('/', function (req, res, next) {
+	Page.find().exec()
+	.then(function(foundPage){
+		console.log(foundPage);
+		res.render('index',{pages:foundPage});
+	})
+	.then(null, function(err){
+			res.render('error',{message: "Error" , error:err})
+	});
 });
 
-router.post('/wiki', function (req, res, next) {
-	console.log('wikipost');
-	res.send('wikipost');
-	// res.render( 'index', { title: "George Holevas", tweets: tweets } );
+router.get('/search', function (req, res, next) {
+	Page.findByTag(req.query.tags)
+	.then(function(foundPage){
+		console.log(foundPage);
+		res.render('index',{pages:foundPage});
+	})
+	.then(null, function(err){
+			res.render('error',{message: "Error" , error:err})
+	});
 });
 
-router.get('/wiki/add', function (req, res, next) {
-	console.log('wikiadd');
-	res.send('wikiadd');
-	// res.render( 'index', { title: "George Holevas", tweets: tweets } );
+
+
+router.post('/', function (req, res, next) {
+	//res.json(req.body);
+	var page = new Page({
+		title: req.body.pagetitle,
+		content: req.body.pagecontent,
+		tags: req.body.tags.split(' ')
+	});
+	//page.urlTitle = encodeURIComponent(page.title);
+	page.save()
+	.then(function(page){
+		// res.redirect('/'+page.urlTitle);
+		res.redirect(page.route);
+	})
+	.then(null, function(err){
+		res.render('error',{message: "Error" , error:err})
+	})
 });
 
+
+router.get('/add', function (req, res, next) {
+//	console.log('wikiadd');
+//	res.send('wikiadd');
+    res.render( 'addpage');
+});
+
+
+router.get('/:urlTitle', function (req, res, next) {
+//	console.log('wikiadd');
+Page.findOne({urlTitle:req.params.urlTitle}).exec()
+.then(function(foundPage){
+	console.log(foundPage);
+	res.render('wikipage',{page:foundPage});
+})
+.then(null, function(err){
+		res.render('error',{message: "Error" , error:err})
+});
+
+});
 module.exports = router;

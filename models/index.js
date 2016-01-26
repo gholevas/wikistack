@@ -16,7 +16,8 @@ var pageSchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref:  'User'
-  }
+  },
+  tags: [{type:String}]
 });
 
 pageSchema.virtual('route').get(function(){
@@ -27,6 +28,30 @@ var userSchema = new Schema({
   name:  {type: String, required: true, unique: true},
   email: {type: String, required: true}
 });
+
+
+pageSchema.pre('validate',function(next){
+	console.log('pre hook running')
+	this.urlTitle = generateUrlTitle(this.title);
+	console.log(this.urlTitle);
+	next();
+});
+
+pageSchema.statics.findByTag = function(tag){
+	return this.find({tags: {$elemMatch: { $eq: tag}}}).exec();
+}
+
+function generateUrlTitle (title) {
+  if (title) {
+    // Removes all non-alphanumeric characters from title
+    // And make whitespace underscore
+    return title.replace(/\s+/g, '_').replace(/\W/g, '');
+  } else {
+    // Generates random 5 letter string
+    return Math.random().toString(36).substring(2, 7);
+  }
+}
+
 
 var Page = mongoose.model('Page', pageSchema);
 var User = mongoose.model('User', userSchema);
